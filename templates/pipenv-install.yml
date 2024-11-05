@@ -1,0 +1,16 @@
+# File: templates/pipenv-install.yml
+
+parameters:
+- name: 'interp'  # defaults for any parameters that aren't specified
+  type: string
+  default: 'C:\Python\Python3114\python.exe'
+
+steps:
+- script: |
+      "${{ parameters.interp }}" -m pip install --upgrade pip
+      echo pip upgrade
+      "${{ parameters.interp }}" -m pip install pipenv
+      echo pipenv installation
+      "${{ parameters.interp }}" -m pipenv install --dev
+      echo install dev packages
+  displayName: 'Install pipenv'

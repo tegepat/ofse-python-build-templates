@@ -1,0 +1,22 @@
+# File: templates/pylint-run.yml
+
+parameters:
+- name: 'interp'  # defaults for any parameters that aren't specified
+  type: string
+  default: 'C:\Python\Python3114\python.exe'
+- name: 'tool'
+  type: string
+  default: 'pylint'
+- name: 'src'
+  type: string
+  default: '$(build.sourcesDirectory)\src'
+- name: 'cmd'
+  type: string
+  default: ''
+
+steps:
+- script: |
+      ${{ parameters.interp }} -m pipenv run ${{ parameters.tool }} ${{ parameters.cmd }} ${{ parameters.src }}
+  failOnStderr: false
+  continueOnError: true
+  displayName: 'Run "${{ parameters.tool }}"'

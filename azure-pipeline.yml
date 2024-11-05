@@ -1,0 +1,67 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+variables:
+- name: interp
+  value: C:\Python\Python3114\python.exe
+- name: src
+  value: $(build.sourcesDirectory)\src
+- name: test
+  value: $(build.sourcesDirectory)\test
+
+pr:
+- main
+
+pool:
+  name: ld6vdmatl00
+
+jobs:
+  - job:
+    displayName: Python Template Pipe
+    continueOnError: true
+    workspace:
+      clean: all
+    steps:
+    - template: templates/pipenv-install.yml
+      parameters:
+        interp: '${{ variables.interp }}'
+    - template: templates/run-pytool.yml
+      parameters:
+        interp: '${{ variables.interp }}'
+        tool: 'pylint'
+        src: '${{ variables.src }}'
+        cmd: '--output=$(build.sourcesDirectory)\pylint.log'
+    - template: templates/run-pytool.yml
+      parameters:
+        interp: '${{ variables.interp }}'
+        tool: 'ruff'
+        src: '${{ variables.src }}'
+        cmd: 'check -v --output-file "$(Build.SourcesDirectory)\ruff.log"'
+    - template: templates/run-pytool.yml
+      parameters:
+        interp: '${{ variables.interp }}'
+        tool: 'pytest'
+        src: '${{ variables.src }}'
+        cmd: '"${{ variables.test }}" --doctest-modules --junitxml=junit/test-results.xml --cov="${{ variables.test }}" --cov-report xml:cov.xml'
+    - task: CopyFiles@2
+      displayName: 'Copy log files to: $(Build.ArtifactStagingDirectory)'
+      inputs:
+        Contents: '$(Build.SourcesDirectory)\*.log'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: CopyFiles@2
+      displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)\junit'
+        Contents: '*.xml'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: CopyFiles@2
+      displayName: 'Copy coverage files to: $(Build.ArtifactStagingDirectory)'
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)'
+        Contents: '**\htmlcov\**\!(.gitignore)'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: drop
