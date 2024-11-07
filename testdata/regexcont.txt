@@ -1,2 +1,0 @@
-^{\S}+$
-(\S*):(\d+):(\d+): [iInNfFoO|wWaArRnNiInNgG|eErR{2}oOrR|nNoOtTeE]+: (\d+):( \S+)+
